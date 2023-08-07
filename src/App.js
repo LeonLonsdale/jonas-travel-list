@@ -9,12 +9,16 @@ const App = () => {
   const [items, setItems] = useState([]);
   const handleAddItems = (item) => setItems((items) => [...items, item]);
   const handleDelItems = (id) => setItems((items) => items.filter((item) => item.id !== id));
+  const handleToggleItems = (id) =>
+    setItems((items) =>
+      items.map((item) => (item.id === id ? {...item, packed: !item.packed} : item))
+    );
   return (
     <div className="app">
       <Logo />
       {/* Convention to use name: onAdd... */}
       <Form onAddItems={handleAddItems} />
-      <PackingList items={items} onDelItems={handleDelItems} />
+      <PackingList items={items} onDelItems={handleDelItems} onToggleItems={handleToggleItems} />
       <Stats items={items} />
     </div>
   );
@@ -58,21 +62,22 @@ const Form = ({onAddItems}) => {
   );
 };
 
-const PackingList = ({items, onDelItems}) => {
+const PackingList = ({items, onDelItems, onToggleItems}) => {
   return (
     <div className="list">
       <ul>
         {items.map((item) => (
-          <Item item={item} onDelItems={onDelItems} key={item.id} />
+          <Item item={item} onDelItems={onDelItems} onToggleItems={onToggleItems} key={item.id} />
         ))}
       </ul>
     </div>
   );
 };
 
-const Item = ({item, onDelItems}) => {
+const Item = ({item, onDelItems, onToggleItems}) => {
   return (
     <li>
+      <input type="checkbox" value={item.packed} onChange={() => onToggleItems(item.id)} />
       <span style={item.packed ? {textDecoration: 'line-through'} : {}}>
         {item.quantity} {item.description}
       </span>
@@ -88,7 +93,8 @@ const Stats = ({items}) => {
   return (
     <footer className="stats">
       <em>
-        You have {numItems} items in your list. You've already packed {packedPerc}% of those items.
+        You have {numItems} items in your list. You've already packed {numPacked} ({packedPerc}%) of
+        those items.
       </em>
     </footer>
   );
